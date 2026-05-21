@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>USCIS 2025 Civics Test — Flashcards</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #4f46e5;
+    --accent-2: #6366f1;
+    --green: #10b981;
+    --red: #ef4444;
+    --border: #334155;
+    --card-front: #ffffff;
+    --card-back: #fef3c7;
+    --card-text: #0f172a;
+    --shadow: 0 20px 50px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  .container { max-width: 880px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 18px; }
+  header h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -.5px; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  /* State picker bar */
+  .state-bar {
+    margin-top: 14px;
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .state-bar label {
+    font-size: 14px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .state-bar select {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 200px;
+  }
+  .state-bar select:focus { outline: 2px solid var(--accent); }
+  .state-bar .selected-tag {
+    background: var(--accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .controls {
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 18px 0;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all .15s ease;
+  }
+  .filter-btn:hover { background: #475569; }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .filter-btn .count {
+    margin-left: 6px;
+    background: rgba(255,255,255,.15);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+  }
+  .util-group { display: flex; gap: 6px; }
+  .util-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .util-btn:hover { color: var(--text); border-color: var(--muted); }
+
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--panel-2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    width: 0%;
+    transition: width .25s ease;
+  }
+
+  .card-stage { perspective: 1500px; margin-bottom: 16px; }
+  .card {
+    position: relative;
+    width: 100%;
+    min-height: 360px;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,.2,.2,1);
+    cursor: pointer;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 18px;
+    padding: 32px 28px;
+    background: var(--card-front);
+    color: var(--card-text);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow-y: auto;
+  }
+  .card-face.back {
+    background: var(--card-back);
+    transform: rotateY(180deg);
+    justify-content: flex-start;
+  }
+  .card-meta {
+    position: absolute;
+    top: 14px;
+    left: 18px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .status-pill {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .status-pill.know { background: #d1fae5; color: #065f46; }
+  .status-pill.review { background: #fee2e2; color: #991b1b; }
+  .status-pill.unseen { background: #e2e8f0; color: #475569; }
+  .state-badge {
+    position: absolute;
+    bottom: 14px;
+    right: 18px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(79, 70, 229, .15);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+
+  .q-text { font-size: 24px; font-weight: 600; line-height: 1.35; max-width: 100%; }
+  .a-heading {
+    font-size: 12px;
+    font-weight: 700;
+    color: #92400e;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 16px 0 12px;
+    align-self: flex-start;
+  }
+  .a-list { list-style: none; padding: 0; margin: 0; width: 100%; text-align: left; }
+  .a-list li {
+    padding: 7px 0 7px 28px;
+    position: relative;
+    font-size: 17px;
+    line-height: 1.45;
+  }
+  .a-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    top: 7px;
+    color: var(--green);
+    font-weight: 700;
+  }
+  .a-note {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: rgba(99, 102, 241, .1);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1e293b;
+    text-align: left;
+    width: 100%;
+    line-height: 1.5;
+  }
+  .a-note strong { color: var(--accent); }
+  .hint { margin-top: 18px; font-size: 12px; color: #94a3b8; text-align: center; }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .action-btn {
+    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .08s ease;
+    color: white;
+  }
+  .action-btn:hover { transform: translateY(-1px); }
+  .action-btn:active { transform: translateY(0); }
+  .action-know { background: linear-gradient(135deg, #10b981, #059669); }
+  .action-review { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+  .nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .nav-btn {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .nav-btn:hover { background: var(--panel-2); }
+  .nav-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .nav-counter { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+  .empty-state {
+    background: var(--panel);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .empty-state h2 { color: var(--text); margin: 0 0 8px; }
+
+  footer {
+    margin-top: 30px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  footer a { color: var(--accent-2); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 22px; }
+    .q-text { font-size: 20px; }
+    .a-list li { font-size: 15px; }
+    .card-face { padding: 26px 20px; }
+    .state-bar { flex-direction: column; align-items: stretch; }
+    .state-bar select { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>U.S. Naturalization Test — Flashcards</h1>
+    <p>USCIS 2025 Civics Test · 128 questions</p>
+  </header>
+
+  <div class="state-bar">
+    <label for="stateSelect">📍 Your state:</label>
+    <select id="stateSelect">
+      <option value="">— Select your state —</option>
+    </select>
+    <span class="selected-tag" id="stateTag" style="display:none">Localized</span>
+  </div>
+
+  <div class="controls">
+    <div class="filter-group" id="filterGroup">
+      <button class="filter-btn active" data-filter="all">All <span class="count" id="count-all">0</span></button>
+      <button class="filter-btn" data-filter="review">Need to review <span class="count" id="count-review">0</span></button>
+      <button class="filter-btn" data-filter="know">I know it <span class="count" id="count-know">0</span></button>
+      <button class="filter-btn" data-filter="unseen">Not yet rated <span class="count" id="count-unseen">0</span></button>
+    </div>
+    <div class="util-group">
+      <button class="util-btn" id="shuffleBtn" title="Shuffle the current deck">🔀 Shuffle</button>
+      <button class="util-btn" id="resetBtn" title="Clear all 'know it' / 'review' tags">↺ Reset</button>
+    </div>
+  </div>
+
+  <div class="progress-row">
+    <span id="progressLabel">Card 0 of 0</span>
+    <span id="modeLabel"></span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div id="cardArea">
+    <div class="card-stage">
+      <div class="card" id="card">
+        <div class="card-face front">
+          <div class="card-meta" id="frontMeta">Q1 · Question</div>
+          <div class="status-pill unseen" id="frontStatus">Not rated</div>
+          <div class="q-text" id="questionText">Loading…</div>
+          <div class="hint">Click card to flip · or press Space</div>
+          <div class="state-badge" id="frontStateBadge" style="display:none"></div>
+        </div>
+        <div class="card-face back">
+          <div class="card-meta" id="backMeta">Q1 · Answer</div>
+          <div class="status-pill unseen" id="backStatus">Not rated</div>
+          <div class="a-heading">Acceptable answer(s)</div>
+          <ul class="a-list" id="answerList"></ul>
+          <div class="a-note" id="answerNote" style="display:none"></div>
+          <div class="state-badge" id="backStateBadge" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="action-btn action-know" id="knowBtn">✓ I know it</button>
+      <button class="action-btn action-review" id="reviewBtn">↻ I need to review</button>
+    </div>
+
+    <div class="nav">
+      <button class="nav-btn" id="prevBtn">← Previous</button>
+      <span class="nav-counter" id="navCounter">—</span>
+      <button class="nav-btn" id="nextBtn">Next →</button>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty-state" style="display:none">
+    <h2>Nothing in this list yet</h2>
+    <p>Switch to "All" to start rating questions, or try a different filter.</p>
+  </div>
+
+  <footer>
+    Your state choice and progress are saved automatically in your browser. Questions from the
+    <a href="https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf" target="_blank" rel="noopener">USCIS 2025 Civics Test (PDF)</a>.
+    Officeholders reflect data as of May 2026 — always verify at
+    <a href="https://www.uscis.gov/citizenship/testupdates" target="_blank" rel="noopener">uscis.gov/citizenship/testupdates</a>.
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// State-specific data (governor, U.S. senators, capital)
+// All 50 states + DC. Data current as of May 2026.
+// ============================================================
+const STATES = {
+  AL: { name: "Alabama",        capital: "Montgomery",      governor: "Kay Ivey",                  senators: ["Tommy Tuberville", "Katie Britt"] },
+  AK: { name: "Alaska",         capital: "Juneau",          governor: "Mike Dunleavy",             senators: ["Lisa Murkowski", "Dan Sullivan"] },
+  AZ: { name: "Arizona",        capital: "Phoenix",         governor: "Katie Hobbs",               senators: ["Mark Kelly", "Ruben Gallego"] },
+  AR: { name: "Arkansas",       capital: "Little Rock",     governor: "Sarah Huckabee Sanders",    senators: ["John Boozman", "Tom Cotton"] },
+  CA: { name: "California",     capital: "Sacramento",      governor: "Gavin Newsom",              senators: ["Alex Padilla", "Adam Schiff"] },
+  CO: { name: "Colorado",       capital: "Denver",          governor: "Jared Polis",               senators: ["Michael Bennet", "John Hickenlooper"] },
+  CT: { name: "Connecticut",    capital: "Hartford",        governor: "Ned Lamont",                senators: ["Richard Blumenthal", "Chris Murphy"] },
+  DE: { name: "Delaware",       capital: "Dover",           governor: "Matt Meyer",                senators: ["Chris Coons", "Lisa Blunt Rochester"] },
+  FL: { name: "Florida",        capital: "Tallahassee",     governor: "Ron DeSantis",              senators: ["Rick Scott", "Ashley Moody"] },
+  GA: { name: "Georgia",        capital: "Atlanta",         governor: "Brian Kemp",                senators: ["Jon Ossoff", "Raphael Warnock"] },
+  HI: { name: "Hawaii",         capital: "Honolulu",        governor: "Josh Green",                senators: ["Brian Schatz", "Mazie Hirono"] },
+  ID: { name: "Idaho",          capital: "Boise",           governor: "Brad Little",               senators: ["Mike Crapo", "Jim Risch"] },
+  IL: { name: "Illinois",       capital: "Springfield",     governor: "JB Pritzker",               senators: ["Dick Durbin", "Tammy Duckworth"] },
+  IN: { name: "Indiana",        capital: "Indianapolis",    governor: "Mike Braun",                senators: ["Todd Young", "Jim Banks"] },
+  IA: { name: "Iowa",           capital: "Des Moines",      governor: "Kim Reynolds",              senators: ["Chuck Grassley", "Joni Ernst"] },
+  KS: { name: "Kansas",         capital: "Topeka",          governor: "Laura Kelly",               senators: ["Jerry Moran", "Roger Marshall"] },
+  KY: { name: "Kentucky",       capital: "Frankfort",       governor: "Andy Beshear",              senators: ["Mitch McConnell", "Rand Paul"] },
+  LA: { name: "Louisiana",      capital: "Baton Rouge",     governor: "Jeff Landry",               senators: ["Bill Cassidy", "John Kennedy"] },
+  ME: { name: "Maine",          capital: "Augusta",         governor: "Janet Mills",               senators: ["Susan Collins", "Angus King"] },
+  MD: { name: "Maryland",       capital: "Annapolis",       governor: "Wes Moore",                 senators: ["Chris Van Hollen", "Angela Alsobrooks"] },
+  MA: { name: "Massachusetts",  capital: "Boston",          governor: "Maura Healey",              senators: ["Elizabeth Warren", "Ed Markey"] },
+  MI: { name: "Michigan",       capital: "Lansing",         governor: "Gretchen Whitmer",          senators: ["Gary Peters", "Elissa Slotkin"] },
+  MN: { name: "Minnesota",      capital: "Saint Paul",      governor: "Tim Walz",                  senators: ["Amy Klobuchar", "Tina Smith"] },
+  MS: { name: "Mississippi",    capital: "Jackson",         governor: "Tate Reeves",               senators: ["Roger Wicker", "Cindy Hyde-Smith"] },
+  MO: { name: "Missouri",       capital: "Jefferson City",  governor: "Mike Kehoe",                senators: ["Josh Hawley", "Eric Schmitt"] },
+  MT: { name: "Montana",        capital: "Helena",          governor: "Greg Gianforte",            senators: ["Steve Daines", "Tim Sheehy"] },
+  NE: { name: "Nebraska",       capital: "Lincoln",         governor: "Jim Pillen",                senators: ["Deb Fischer", "Pete Ricketts"] },
+  NV: { name: "Nevada",         capital: "Carson City",     governor: "Joe Lombardo",              senators: ["Catherine Cortez Masto", "Jacky Rosen"] },
+  NH: { name: "New Hampshire",  capital: "Concord",         governor: "Kelly Ayotte",              senators: ["Jeanne Shaheen", "Maggie Hassan"] },
+  NJ: { name: "New Jersey",     capital: "Trenton",         governor: "Mikie Sherrill",            senators: ["Cory Booker", "Andy Kim"] },
+  NM: { name: "New Mexico",     capital: "Santa Fe",        governor: "Michelle Lujan Grisham",    senators: ["Martin Heinrich", "Ben Ray Luján"] },
+  NY: { name: "New York",       capital: "Albany",          governor: "Kathy Hochul",              senators: ["Chuck Schumer", "Kirsten Gillibrand"], nycReps: true },
+  NC: { name: "North Carolina", capital: "Raleigh",         governor: "Josh Stein",                senators: ["Thom Tillis", "Ted Budd"] },
+  ND: { name: "North Dakota",   capital: "Bismarck",        governor: "Kelly Armstrong",           senators: ["John Hoeven", "Kevin Cramer"] },
+  OH: { name: "Ohio",           capital: "Columbus",        governor: "Mike DeWine",               senators: ["Bernie Moreno", "Jon Husted"] },
+  OK: { name: "Oklahoma",       capital: "Oklahoma City",   governor: "Kevin Stitt",               senators: ["James Lankford", "Markwayne Mullin"] },
+  OR: { name: "Oregon",         capital: "Salem",           governor: "Tina Kotek",                senators: ["Ron Wyden", "Jeff Merkley"] },
+  PA: { name: "Pennsylvania",   capital: "Harrisburg",      governor: "Josh Shapiro",              senators: ["John Fetterman", "Dave McCormick"] },
+  RI: { name: "Rhode Island",   capital: "Providence",      governor: "Dan McKee",                 senators: ["Jack Reed", "Sheldon Whitehouse"] },
+  SC: { name: "South Carolina", capital: "Columbia",        governor: "Henry McMaster",            senators: ["Lindsey Graham", "Tim Scott"] },
+  SD: { name: "South Dakota",   capital: "Pierre",          governor: "Larry Rhoden",              senators: ["John Thune", "Mike Rounds"] },
+  TN: { name: "Tennessee",      capital: "Nashville",       governor: "Bill Lee",                  senators: ["Marsha Blackburn", "Bill Hagerty"] },
+  TX: { name: "Texas",          capital: "Austin",          governor: "Greg Abbott",               senators: ["John Cornyn", "Ted Cruz"] },
+  UT: { name: "Utah",           capital: "Salt Lake City",  governor: "Spencer Cox",               senators: ["Mike Lee", "John Curtis"] },
+  VT: { name: "Vermont",        capital: "Montpelier",      governor: "Phil Scott",                senators: ["Bernie Sanders", "Peter Welch"] },
+  VA: { name: "Virginia",       capital: "Richmond",        governor: "Abigail Spanberger",        senators: ["Mark Warner", "Tim Kaine"] },
+  WA: { name: "Washington",     capital: "Olympia",         governor: "Bob Ferguson",              senators: ["Patty Murray", "Maria Cantwell"] },
+  WV: { name: "West Virginia",  capital: "Charleston",      governor: "Patrick Morrisey",          senators: ["Shelley Moore Capito", "Jim Justice"] },
+  WI: { name: "Wisconsin",      capital: "Madison",         governor: "Tony Evers",                senators: ["Tammy Baldwin", "Ron Johnson"] },
+  WY: { name: "Wyoming",        capital: "Cheyenne",        governor: "Mark Gordon",               senators: ["John Barrasso", "Cynthia Lummis"] },
+  DC: { name: "District of Columbia (D.C.)", capital: null, governor: null, senators: null, dc: true }
+};
+
+// NYC-specific U.S. Representative reference (only shown if state = NY)
+const NYC_REPS = [
+  "NY-5 (SE Queens): Gregory Meeks",
+  "NY-6 (Central/East Queens): Grace Meng",
+  "NY-7 (Lower Manhattan/Brooklyn/Queens): Nydia Velázquez",
+  "NY-8 (Brooklyn/Queens): Hakeem Jeffries",
+  "NY-9 (Central Brooklyn): Yvette Clarke",
+  "NY-10 (Lower Manhattan/Brownstone Brooklyn): Dan Goldman",
+  "NY-11 (Staten Island/South Brooklyn): Nicole Malliotakis",
+  "NY-12 (Manhattan East/West Side): Jerrold \"Jerry\" Nadler",
+  "NY-13 (Upper Manhattan/W. Bronx): Adriano Espaillat",
+  "NY-14 (Bronx/Queens): Alexandria Ocasio-Cortez",
+  "NY-15 (South Bronx): Ritchie Torres"
+];
+
+// ============================================================
+// USCIS 2025 Civics Test — 128 Questions
+// Dynamic answers use {{placeholders}} filled in at render time.
+// ============================================================
+const QUESTIONS = [
+  // A. Principles of American Government
+  { id: 1, q: "What is the form of government of the United States?", a: ["Republic", "Constitution-based federal republic", "Representative democracy"] },
+  { id: 2, q: "What is the supreme law of the land?", a: ["(U.S.) Constitution"] },
+  { id: 3, q: "Name one thing the U.S. Constitution does.", a: ["Forms the government", "Defines powers of government", "Defines the parts of government", "Protects the rights of the people"] },
+  { id: 4, q: "The U.S. Constitution starts with the words \"We the People.\" What does \"We the People\" mean?", a: ["Self-government", "Popular sovereignty", "Consent of the governed", "People should govern themselves", "(Example of) social contract"] },
+  { id: 5, q: "How are changes made to the U.S. Constitution?", a: ["Amendments", "The amendment process"] },
+  { id: 6, q: "What does the Bill of Rights protect?", a: ["(The basic) rights of Americans", "(The basic) rights of people living in the United States"] },
+  { id: 7, q: "How many amendments does the U.S. Constitution have?", a: ["Twenty-seven (27)"] },
+  { id: 8, q: "Why is the Declaration of Independence important?", a: ["It says America is free from British control", "It says all people are created equal", "It identifies inherent rights", "It identifies individual freedoms"] },
+  { id: 9, q: "What founding document said the American colonies were free from Britain?", a: ["Declaration of Independence"] },
+  { id: 10, q: "Name two important ideas from the Declaration of Independence and the U.S. Constitution.", a: ["Equality", "Liberty", "Social contract", "Natural rights", "Limited government", "Self-government"] },
+  { id: 11, q: "The words \"Life, Liberty, and the pursuit of Happiness\" are in what founding document?", a: ["Declaration of Independence"] },
+  { id: 12, q: "What is the economic system of the United States?", a: ["Capitalism", "Free market economy"] },
+  { id: 13, q: "What is the rule of law?", a: ["Everyone must follow the law", "Leaders must obey the law", "Government must obey the law", "No one is above the law"] },
+  { id: 14, q: "Many documents influenced the U.S. Constitution. Name one.", a: ["Declaration of Independence", "Articles of Confederation", "Federalist Papers", "Anti-Federalist Papers", "Virginia Declaration of Rights", "Fundamental Orders of Connecticut", "Mayflower Compact", "Iroquois Great Law of Peace"] },
+  { id: 15, q: "There are three branches of government. Why?", a: ["So one part does not become too powerful", "Checks and balances", "Separation of powers"] },
+
+  // B. System of Government
+  { id: 16, q: "Name the three branches of government.", a: ["Legislative, executive, and judicial", "Congress, president, and the courts"] },
+  { id: 17, q: "The President of the United States is in charge of which branch of government?", a: ["Executive branch"] },
+  { id: 18, q: "What part of the federal government writes laws?", a: ["(U.S.) Congress", "(U.S. or national) legislature", "Legislative branch"] },
+  { id: 19, q: "What are the two parts of the U.S. Congress?", a: ["Senate and House (of Representatives)"] },
+  { id: 20, q: "Name one power of the U.S. Congress.", a: ["Writes laws", "Declares war", "Makes the federal budget"] },
+  { id: 21, q: "How many U.S. senators are there?", a: ["One hundred (100)"] },
+  { id: 22, q: "How long is a term for a U.S. senator?", a: ["Six (6) years"] },
+  { id: 23, q: "Who is one of your state's U.S. senators now?", dynamic: "senator" },
+  { id: 24, q: "How many voting members are in the House of Representatives?", a: ["Four hundred thirty-five (435)"] },
+  { id: 25, q: "How long is a term for a member of the House of Representatives?", a: ["Two (2) years"] },
+  { id: 26, q: "Why do U.S. representatives serve shorter terms than U.S. senators?", a: ["To more closely follow public opinion"] },
+  { id: 27, q: "How many senators does each state have?", a: ["Two (2)"] },
+  { id: 28, q: "Why does each state have two senators?", a: ["Equal representation (for small states)", "The Great Compromise (Connecticut Compromise)"] },
+  { id: 29, q: "Name your U.S. representative.", dynamic: "representative" },
+  { id: 30, q: "What is the name of the Speaker of the House of Representatives now?", a: ["Mike Johnson"], note: "Answers about elected officials can change. Verify at <strong>uscis.gov/citizenship/testupdates</strong> before your interview." },
+  { id: 31, q: "Who does a U.S. senator represent?", a: ["Citizens of their state", "People of their state"] },
+  { id: 32, q: "Who elects U.S. senators?", a: ["Citizens from their state"] },
+  { id: 33, q: "Who does a member of the House of Representatives represent?", a: ["Citizens in their (congressional) district", "People from their (congressional) district"] },
+  { id: 34, q: "Who elects members of the House of Representatives?", a: ["Citizens from their (congressional) district"] },
+  { id: 35, q: "Some states have more representatives than other states. Why?", a: ["(Because of) the state's population", "(Because) they have more people", "(Because) some states have more people"] },
+  { id: 36, q: "The President of the United States is elected for how many years?", a: ["Four (4) years"] },
+  { id: 37, q: "The President of the United States can serve only two terms. Why?", a: ["(Because of) the 22nd Amendment", "To keep the president from becoming too powerful"] },
+  { id: 38, q: "What is the name of the President of the United States now?", a: ["Donald Trump", "Donald J. Trump", "Trump"], note: "Always check <strong>uscis.gov/citizenship/testupdates</strong> for the current officeholder before your interview." },
+  { id: 39, q: "What is the name of the Vice President of the United States now?", a: ["JD Vance", "J.D. Vance", "Vance"], note: "Always check <strong>uscis.gov/citizenship/testupdates</strong> for the current officeholder before your interview." },
+  { id: 40, q: "If the president can no longer serve, who becomes president?", a: ["The Vice President (of the United States)"] },
+  { id: 41, q: "Name one power of the president.", a: ["Signs bills into law", "Vetoes bills", "Enforces laws", "Commander in Chief (of the military)", "Chief diplomat", "Appoints federal judges"] },
+  { id: 42, q: "Who is Commander in Chief of the U.S. military?", a: ["The President (of the United States)"] },
+  { id: 43, q: "Who signs bills to become laws?", a: ["The President (of the United States)"] },
+  { id: 44, q: "Who vetoes bills?", a: ["The President (of the United States)"] },
+  { id: 45, q: "Who appoints federal judges?", a: ["The President (of the United States)"] },
+  { id: 46, q: "The executive branch has many parts. Name one.", a: ["President (of the United States)", "Cabinet", "Federal departments and agencies"] },
+  { id: 47, q: "What does the President's Cabinet do?", a: ["Advises the President (of the United States)"] },
+  { id: 48, q: "What are two Cabinet-level positions?", a: ["Attorney General", "Secretary of Agriculture", "Secretary of Commerce", "Secretary of Defense", "Secretary of Education", "Secretary of Energy", "Secretary of Health and Human Services", "Secretary of Homeland Security", "Secretary of Housing and Urban Development", "Secretary of the Interior", "Secretary of Labor", "Secretary of State", "Secretary of Transportation", "Secretary of the Treasury", "Secretary of Veterans Affairs", "Vice President", "(Any two of the above)"] },
+  { id: 49, q: "Why is the Electoral College important?", a: ["It decides who is elected president", "It provides a compromise between the popular election of the president and congressional selection"] },
+  { id: 50, q: "What is one part of the judicial branch?", a: ["Supreme Court", "Federal Courts"] },
+  { id: 51, q: "What does the judicial branch do?", a: ["Reviews laws", "Explains laws", "Resolves disputes (disagreements) about the law", "Decides if a law goes against the (U.S.) Constitution"] },
+  { id: 52, q: "What is the highest court in the United States?", a: ["Supreme Court"] },
+  { id: 53, q: "How many seats are on the Supreme Court?", a: ["Nine (9)"] },
+  { id: 54, q: "How many Supreme Court justices are usually needed to decide a case?", a: ["Five (5)"] },
+  { id: 55, q: "How long do Supreme Court justices serve?", a: ["(For) life", "Lifetime appointment", "(Until) retirement"] },
+  { id: 56, q: "Supreme Court justices serve for life. Why?", a: ["To be independent (of politics)", "To limit outside (political) influence"] },
+  { id: 57, q: "Who is the Chief Justice of the United States now?", a: ["John Roberts", "John G. Roberts, Jr."], note: "Always check <strong>uscis.gov/citizenship/testupdates</strong> for the current officeholder before your interview." },
+  { id: 58, q: "Name one power that is only for the federal government.", a: ["Print paper money", "Mint coins", "Declare war", "Create an army", "Make treaties", "Set foreign policy"] },
+  { id: 59, q: "Name one power that is only for the states.", a: ["Provide schooling and education", "Provide protection (police)", "Provide safety (fire departments)", "Give a driver's license", "Approve zoning and land use"] },
+  { id: 60, q: "What is the purpose of the 10th Amendment?", a: ["(It states that the) powers not given to the federal government belong to the states or to the people"] },
+  { id: 61, q: "Who is the governor of your state now?", dynamic: "governor" },
+  { id: 62, q: "What is the capital of your state?", dynamic: "capital" },
+
+  // C. Rights and Responsibilities
+  { id: 63, q: "There are four amendments to the U.S. Constitution about who can vote. Describe one of them.", a: ["Citizens eighteen (18) and older (can vote)", "You don't have to pay (a poll tax) to vote", "Any citizen can vote (Women and men can vote)", "A male citizen of any race (can vote)"] },
+  { id: 64, q: "Who can vote in federal elections, run for federal office, and serve on a jury in the United States?", a: ["Citizens", "Citizens of the United States", "U.S. citizens"] },
+  { id: 65, q: "What are three rights of everyone living in the United States?", a: ["Freedom of expression", "Freedom of speech", "Freedom of assembly", "Freedom to petition the government", "Freedom of religion", "The right to bear arms"] },
+  { id: 66, q: "What do we show loyalty to when we say the Pledge of Allegiance?", a: ["The United States", "The flag"] },
+  { id: 67, q: "Name two promises that new citizens make in the Oath of Allegiance.", a: ["Give up loyalty to other countries", "Defend the (U.S.) Constitution", "Obey the laws of the United States", "Serve in the military (if needed)", "Serve (help, do important work for) the nation (if needed)", "Be loyal to the United States"] },
+  { id: 68, q: "How can people become United States citizens?", a: ["Be born in the United States, under the conditions set by the 14th Amendment", "Naturalize", "Derive citizenship (under conditions set by Congress)"] },
+  { id: 69, q: "What are two examples of civic participation in the United States?", a: ["Vote", "Run for office", "Join a political party", "Help with a campaign", "Join a civic group", "Join a community group", "Give an elected official your opinion (on an issue)", "Contact elected officials", "Support or oppose an issue or policy", "Write to a newspaper"] },
+  { id: 70, q: "What is one way Americans can serve their country?", a: ["Vote", "Pay taxes", "Obey the law", "Serve in the military", "Run for office", "Work for local, state, or federal government"] },
+  { id: 71, q: "Why is it important to pay federal taxes?", a: ["Required by law", "All people pay to fund the federal government", "Required by the (U.S.) Constitution (16th Amendment)", "Civic duty"] },
+  { id: 72, q: "It is important for all men age 18 through 25 to register for the Selective Service. Name one reason why.", a: ["Required by law", "Civic duty", "Makes the draft fair, if needed"] },
+
+  // D. Colonial Period & Independence
+  { id: 73, q: "The colonists came to America for many reasons. Name one.", a: ["Freedom", "Political liberty", "Religious freedom", "Economic opportunity", "Escape persecution"] },
+  { id: 74, q: "Who lived in America before the Europeans arrived?", a: ["American Indians", "Native Americans"] },
+  { id: 75, q: "What group of people was taken and sold as slaves?", a: ["Africans", "People from Africa"] },
+  { id: 76, q: "What war did the Americans fight to win independence from Britain?", a: ["American Revolution", "The (American) Revolutionary War", "War for (American) Independence"] },
+  { id: 77, q: "Name one reason why the Americans declared independence from Britain.", a: ["High taxes", "Taxation without representation", "British soldiers stayed in Americans' houses (boarding, quartering)", "They did not have self-government", "Boston Massacre", "Boston Tea Party (Tea Act)", "Stamp Act", "Sugar Act", "Townshend Acts", "Intolerable (Coercive) Acts"] },
+  { id: 78, q: "Who wrote the Declaration of Independence?", a: ["(Thomas) Jefferson"] },
+  { id: 79, q: "When was the Declaration of Independence adopted?", a: ["July 4, 1776"] },
+  { id: 80, q: "The American Revolution had many important events. Name one.", a: ["(Battle of) Bunker Hill", "Declaration of Independence", "Washington Crossing the Delaware (Battle of Trenton)", "(Battle of) Saratoga", "Valley Forge (Encampment)", "(Battle of) Yorktown (British surrender at Yorktown)"] },
+  { id: 81, q: "There were 13 original states. Name five.", a: ["New Hampshire", "Massachusetts", "Rhode Island", "Connecticut", "New York", "New Jersey", "Pennsylvania", "Delaware", "Maryland", "Virginia", "North Carolina", "South Carolina", "Georgia"], note: "You only need to name <strong>five</strong> of the 13." },
+  { id: 82, q: "What founding document was written in 1787?", a: ["(U.S.) Constitution"] },
+  { id: 83, q: "The Federalist Papers supported the passage of the U.S. Constitution. Name one of the writers.", a: ["(James) Madison", "(Alexander) Hamilton", "(John) Jay", "Publius"] },
+  { id: 84, q: "Why were the Federalist Papers important?", a: ["They helped people understand the (U.S.) Constitution", "They supported passing the (U.S.) Constitution"] },
+  { id: 85, q: "Benjamin Franklin is famous for many things. Name one.", a: ["Founded the first free public libraries", "First Postmaster General of the United States", "Helped write the Declaration of Independence", "Inventor", "U.S. diplomat"] },
+  { id: 86, q: "George Washington is famous for many things. Name one.", a: ["\"Father of Our Country\"", "First president of the United States", "General of the Continental Army", "President of the Constitutional Convention"] },
+  { id: 87, q: "Thomas Jefferson is famous for many things. Name one.", a: ["Writer of the Declaration of Independence", "Third president of the United States", "Doubled the size of the United States (Louisiana Purchase)", "First Secretary of State", "Founded the University of Virginia", "Writer of the Virginia Statute on Religious Freedom"] },
+  { id: 88, q: "James Madison is famous for many things. Name one.", a: ["\"Father of the Constitution\"", "Fourth president of the United States", "President during the War of 1812", "One of the writers of the Federalist Papers"] },
+  { id: 89, q: "Alexander Hamilton is famous for many things. Name one.", a: ["First Secretary of the Treasury", "One of the writers of the Federalist Papers", "Helped establish the First Bank of the United States", "Aide to General George Washington", "Member of the Continental Congress"] },
+
+  // E. The 1800s
+  { id: 90, q: "What territory did the United States buy from France in 1803?", a: ["Louisiana Territory", "Louisiana"] },
+  { id: 91, q: "Name one war fought by the United States in the 1800s.", a: ["War of 1812", "Mexican-American War", "Civil War", "Spanish-American War"] },
+  { id: 92, q: "Name the U.S. war between the North and the South.", a: ["The Civil War"] },
+  { id: 93, q: "The Civil War had many important events. Name one.", a: ["(Battle of) Fort Sumter", "Emancipation Proclamation", "(Battle of) Vicksburg", "(Battle of) Gettysburg", "Sherman's March", "(Surrender at) Appomattox", "(Battle of) Antietam/Sharpsburg", "Lincoln was assassinated"] },
+  { id: 94, q: "Abraham Lincoln is famous for many things. Name one.", a: ["Freed the slaves (Emancipation Proclamation)", "Saved (or preserved) the Union", "Led the United States during the Civil War", "16th president of the United States", "Delivered the Gettysburg Address"] },
+  { id: 95, q: "What did the Emancipation Proclamation do?", a: ["Freed the slaves", "Freed slaves in the Confederacy", "Freed slaves in the Confederate states", "Freed slaves in most Southern states"] },
+  { id: 96, q: "What U.S. war ended slavery?", a: ["The Civil War"] },
+  { id: 97, q: "What amendment says all persons born or naturalized in the United States, and subject to the jurisdiction thereof, are U.S. citizens?", a: ["14th Amendment"] },
+  { id: 98, q: "When did all men get the right to vote?", a: ["After the Civil War", "During Reconstruction", "(With the) 15th Amendment", "1870"] },
+  { id: 99, q: "Name one leader of the women's rights movement in the 1800s.", a: ["Susan B. Anthony", "Elizabeth Cady Stanton", "Sojourner Truth", "Harriet Tubman", "Lucretia Mott", "Lucy Stone"] },
+
+  // F. The 1900s & Modern History
+  { id: 100, q: "Name one war fought by the United States in the 1900s.", a: ["World War I", "World War II", "Korean War", "Vietnam War", "(Persian) Gulf War"] },
+  { id: 101, q: "Why did the United States enter World War I?", a: ["Because Germany attacked U.S. (civilian) ships", "To support the Allied Powers (England, France, Italy, and Russia)", "To oppose the Central Powers (Germany, Austria-Hungary, the Ottoman Empire, and Bulgaria)"] },
+  { id: 102, q: "When did all women get the right to vote?", a: ["1920", "After World War I", "(With the) 19th Amendment"] },
+  { id: 103, q: "What was the Great Depression?", a: ["Longest economic recession in modern history"] },
+  { id: 104, q: "When did the Great Depression start?", a: ["The Great Crash (1929)", "Stock market crash of 1929"] },
+  { id: 105, q: "Who was president during the Great Depression and World War II?", a: ["(Franklin) Roosevelt", "Franklin D. Roosevelt", "FDR"] },
+  { id: 106, q: "Why did the United States enter World War II?", a: ["(Bombing of) Pearl Harbor", "Japanese attacked Pearl Harbor", "To support the Allied Powers (England, France, and Russia)", "To oppose the Axis Powers (Germany, Italy, and Japan)"] },
+  { id: 107, q: "Dwight Eisenhower is famous for many things. Name one.", a: ["General during World War II", "President at the end of (during) the Korean War", "34th president of the United States", "Signed the Federal-Aid Highway Act of 1956 (Created the Interstate System)"] },
+  { id: 108, q: "Who was the United States' main rival during the Cold War?", a: ["Soviet Union", "USSR", "Russia"] },
+  { id: 109, q: "During the Cold War, what was one main concern of the United States?", a: ["Communism", "Nuclear war"] },
+  { id: 110, q: "Why did the United States enter the Korean War?", a: ["To stop the spread of communism"] },
+  { id: 111, q: "Why did the United States enter the Vietnam War?", a: ["To stop the spread of communism"] },
+  { id: 112, q: "What did the civil rights movement do?", a: ["Fought to end racial discrimination"] },
+  { id: 113, q: "Martin Luther King, Jr. is famous for many things. Name one.", a: ["Fought for civil rights", "Worked for equality for all Americans", "Worked to ensure that people would \"not be judged by the color of their skin, but by the content of their character\""] },
+  { id: 114, q: "Why did the United States enter the Persian Gulf War?", a: ["To force the Iraqi military from Kuwait"] },
+  { id: 115, q: "What major event happened on September 11, 2001 in the United States?", a: ["Terrorists attacked the United States", "Terrorists took over two planes and crashed them into the World Trade Center in New York City", "Terrorists took over a plane and crashed into the Pentagon in Arlington, Virginia", "Terrorists took over a plane originally aimed at Washington, D.C., and crashed in a field in Pennsylvania"] },
+  { id: 116, q: "Name one U.S. military conflict after the September 11, 2001 attacks.", a: ["(Global) War on Terror", "War in Afghanistan", "War in Iraq"] },
+  { id: 117, q: "Name one American Indian tribe in the United States.", a: ["Apache", "Blackfeet", "Cayuga", "Cherokee", "Cheyenne", "Chippewa", "Choctaw", "Creek", "Crow", "Hopi", "Huron", "Inupiat", "Lakota", "Mohawk", "Mohegan", "Navajo", "Oneida", "Onondaga", "Pueblo", "Seminole", "Seneca", "Shawnee", "Sioux", "Teton", "Tuscarora"] },
+  { id: 118, q: "Name one example of an American innovation.", a: ["Light bulb", "Automobile (cars, internal combustion engine)", "Skyscrapers", "Airplane", "Assembly line", "Landing on the moon", "Integrated circuit (IC)"] },
+
+  // G. Symbols
+  { id: 119, q: "What is the capital of the United States?", a: ["Washington, D.C."] },
+  { id: 120, q: "Where is the Statue of Liberty?", a: ["New York (Harbor)", "Liberty Island"], note: "Also accepted: New Jersey, near New York City, on the Hudson River." },
+  { id: 121, q: "Why does the flag have 13 stripes?", a: ["(Because there were) 13 original colonies", "(Because the stripes) represent the original colonies"] },
+  { id: 122, q: "Why does the flag have 50 stars?", a: ["(Because there is) one star for each state", "(Because) each star represents a state", "(Because there are) 50 states"] },
+  { id: 123, q: "What is the name of the national anthem?", a: ["The Star-Spangled Banner"] },
+  { id: 124, q: "The Nation's first motto was \"E Pluribus Unum.\" What does that mean?", a: ["Out of many, one", "We all become one"] },
+
+  // H. Holidays
+  { id: 125, q: "What is Independence Day?", a: ["A holiday to celebrate U.S. independence (from Britain)", "The country's birthday"] },
+  { id: 126, q: "Name three national U.S. holidays.", a: ["New Year's Day", "Martin Luther King, Jr. Day", "Presidents Day (Washington's Birthday)", "Memorial Day", "Juneteenth", "Independence Day", "Labor Day", "Columbus Day", "Veterans Day", "Thanksgiving Day", "Christmas Day"] },
+  { id: 127, q: "What is Memorial Day?", a: ["A holiday to honor soldiers who died in military service"] },
+  { id: 128, q: "What is Veterans Day?", a: ["A holiday to honor people in the (U.S.) military", "A holiday to honor people who have served (in the U.S. military)"] }
+];
+
+// ============================================================
+// Dynamic-answer resolver — fills in state-specific answers
+// ============================================================
+function resolveDynamic(question, stateCode) {
+  if (!question.dynamic) return { answers: question.a || [], note: question.note || null, stateLocalized: false };
+
+  const s = stateCode ? STATES[stateCode] : null;
+  const noStateMsg = "Pick your state at the top to see your answer.";
+
+  if (question.dynamic === "senator") {
+    if (!s) return { answers: [noStateMsg], note: "Each state has 2 U.S. senators. <strong>Either name counts.</strong>", stateLocalized: false };
+    if (s.dc) return { answers: ["D.C. has no U.S. senators."], note: "Washington, D.C. is not a state. Residents have no voting senators.", stateLocalized: true };
+    return {
+      answers: s.senators,
+      note: "<strong>" + s.name + ":</strong> Either name is correct. Verify at <strong>uscis.gov/citizenship/testupdates</strong> before your interview — senators can change.",
+      stateLocalized: true
+    };
+  }
+
+  if (question.dynamic === "representative") {
+    if (!s) return { answers: [noStateMsg], note: "Your U.S. Representative depends on your <strong>congressional district</strong>, not just your state. Look it up by ZIP code at <a href=\"https://www.house.gov/representatives/find-your-representative\" target=\"_blank\">house.gov</a>.", stateLocalized: false };
+    if (s.dc) return { answers: ["D.C. has a non-voting Delegate (Eleanor Holmes Norton)."], note: "Washington, D.C. is not a state and has no voting U.S. Representative.", stateLocalized: true };
+    if (s.nycReps) {
+      const reps = NYC_REPS.map(function(r){ return "• " + r; }).join("<br>");
+      return {
+        answers: ["See the NYC district list below →"],
+        note: "<strong>NYC representatives by district:</strong><br>" + reps + "<br><br>Look up your district at <a href=\"https://www.house.gov/representatives/find-your-representative\" target=\"_blank\">house.gov</a> if unsure.",
+        stateLocalized: true
+      };
+    }
+    return {
+      answers: ["Depends on your district in " + s.name],
+      note: "<strong>" + s.name + "</strong> has multiple congressional districts. Look up your representative by ZIP code at <a href=\"https://www.house.gov/representatives/find-your-representative\" target=\"_blank\">house.gov</a>.",
+      stateLocalized: true
+    };
+  }
+
+  if (question.dynamic === "governor") {
+    if (!s) return { answers: [noStateMsg], note: "Each state has one governor.", stateLocalized: false };
+    if (s.dc) return { answers: ["D.C. has a Mayor, not a Governor (currently Muriel Bowser)."], note: "Washington, D.C. is not a state. Its chief executive is the Mayor.", stateLocalized: true };
+    return {
+      answers: [s.governor],
+      note: "<strong>" + s.name + "'s Governor:</strong> " + s.governor + ". Officials change — confirm at <strong>uscis.gov/citizenship/testupdates</strong>.",
+      stateLocalized: true
+    };
+  }
+
+  if (question.dynamic === "capital") {
+    if (!s) return { answers: [noStateMsg], note: "Every state has its own capital city — usually not the biggest city in the state.", stateLocalized: false };
+    if (s.dc) return { answers: ["Washington, D.C. is itself the capital of the United States."], note: "D.C. is not a state, so this question doesn't apply the same way.", stateLocalized: true };
+    return {
+      answers: [s.capital],
+      note: "<strong>The capital of " + s.name + " is " + s.capital + ".</strong>",
+      stateLocalized: true
+    };
+  }
+  return { answers: question.a || [], note: question.note || null, stateLocalized: false };
+}
+
+// ============================================================
+// State management — persisted in localStorage
+// ============================================================
+const STORAGE_KEY = "naturalization-flashcards-v2";
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch (e) { return {}; }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+let state = loadState();
+if (!state.ratings) state.ratings = {};
+if (!state.stateCode) state.stateCode = "";
+
+let filter = "all";
+let deck = [];
+let pos = 0;
+let flipped = false;
+
+const $ = function(id) { return document.getElementById(id); };
+
+function buildDeck() {
+  const all = QUESTIONS.map(function(q){ return q.id; });
+  if (filter === "all") deck = all;
+  else if (filter === "review") deck = all.filter(function(id){ return state.ratings[id] === "review"; });
+  else if (filter === "know") deck = all.filter(function(id){ return state.ratings[id] === "know"; });
+  else if (filter === "unseen") deck = all.filter(function(id){ return !state.ratings[id]; });
+  pos = 0;
+  flipped = false;
+}
+
+function shuffle() {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  pos = 0;
+  flipped = false;
+  render();
+}
+
+function populateStateSelect() {
+  const sel = $("stateSelect");
+  const entries = Object.entries(STATES).sort(function(a,b){ return a[1].name.localeCompare(b[1].name); });
+  entries.forEach(function(pair){
+    const opt = document.createElement("option");
+    opt.value = pair[0];
+    opt.textContent = pair[1].name;
+    sel.appendChild(opt);
+  });
+  sel.value = state.stateCode || "";
+}
+
+function render() {
+  const counts = { all: 128, review: 0, know: 0, unseen: 0 };
+  QUESTIONS.forEach(function(q){
+    const r = state.ratings[q.id];
+    if (r === "review") counts.review++;
+    else if (r === "know") counts.know++;
+    else counts.unseen++;
+  });
+  $("count-all").textContent = counts.all;
+  $("count-review").textContent = counts.review;
+  $("count-know").textContent = counts.know;
+  $("count-unseen").textContent = counts.unseen;
+
+  document.querySelectorAll(".filter-btn").forEach(function(btn){
+    btn.classList.toggle("active", btn.dataset.filter === filter);
+  });
+
+  const labels = {
+    all: "Studying all 128 questions",
+    review: "Reviewing questions you flagged",
+    know: "Reviewing questions you know",
+    unseen: "Showing unrated questions"
+  };
+  $("modeLabel").textContent = labels[filter];
+
+  if (state.stateCode && STATES[state.stateCode]) {
+    $("stateTag").style.display = "inline-block";
+    $("stateTag").textContent = "📍 " + STATES[state.stateCode].name;
+  } else {
+    $("stateTag").style.display = "none";
+  }
+
+  if (deck.length === 0) {
+    $("cardArea").style.display = "none";
+    $("emptyState").style.display = "block";
+    $("progressLabel").textContent = "0 of 0";
+    $("progressFill").style.width = "0%";
+    return;
+  }
+  $("cardArea").style.display = "block";
+  $("emptyState").style.display = "none";
+
+  const qid = deck[pos];
+  const q = QUESTIONS.find(function(x){ return x.id === qid; });
+  const resolved = resolveDynamic(q, state.stateCode);
+
+  $("progressLabel").textContent = "Card " + (pos + 1) + " of " + deck.length;
+  $("progressFill").style.width = (((pos + 1) / deck.length) * 100) + "%";
+  $("navCounter").textContent = "Question #" + q.id;
+
+  $("frontMeta").textContent = "Q" + q.id + " · Question";
+  $("backMeta").textContent = "Q" + q.id + " · Answer";
+  $("questionText").textContent = q.q;
+
+  const ul = $("answerList");
+  ul.innerHTML = "";
+  resolved.answers.forEach(function(answer){
+    const li = document.createElement("li");
+    li.textContent = answer;
+    ul.appendChild(li);
+  });
+
+  const noteEl = $("answerNote");
+  if (resolved.note) {
+    noteEl.innerHTML = resolved.note;
+    noteEl.style.display = "block";
+  } else {
+    noteEl.style.display = "none";
+  }
+
+  if (q.dynamic && resolved.stateLocalized) {
+    const badgeText = "For " + (STATES[state.stateCode] ? STATES[state.stateCode].name : "your state");
+    $("frontStateBadge").textContent = badgeText;
+    $("backStateBadge").textContent = badgeText;
+    $("frontStateBadge").style.display = "inline-block";
+    $("backStateBadge").style.display = "inline-block";
+  } else if (q.dynamic && !state.stateCode) {
+    $("frontStateBadge").textContent = "Pick state ↑";
+    $("backStateBadge").textContent = "Pick state ↑";
+    $("frontStateBadge").style.display = "inline-block";
+    $("backStateBadge").style.display = "inline-block";
+  } else {
+    $("frontStateBadge").style.display = "none";
+    $("backStateBadge").style.display = "none";
+  }
+
+  const rating = state.ratings[q.id];
+  const pillClass = rating === "know" ? "know" : rating === "review" ? "review" : "unseen";
+  const pillText = rating === "know" ? "✓ I know it" : rating === "review" ? "↻ Review" : "Not rated";
+  ["frontStatus", "backStatus"].forEach(function(id){
+    const el = $(id);
+    el.className = "status-pill " + pillClass;
+    el.textContent = pillText;
+  });
+
+  $("card").classList.toggle("flipped", flipped);
+  $("prevBtn").disabled = pos === 0;
+  $("nextBtn").disabled = pos === deck.length - 1;
+}
+
+function flip() {
+  flipped = !flipped;
+  $("card").classList.toggle("flipped", flipped);
+}
+
+function rate(value) {
+  if (deck.length === 0) return;
+  const qid = deck[pos];
+  state.ratings[qid] = value;
+  saveState();
+  if (pos < deck.length - 1) { pos++; flipped = false; }
+  render();
+}
+
+function next() { if (pos < deck.length - 1) { pos++; flipped = false; render(); } }
+function prev() { if (pos > 0) { pos--; flipped = false; render(); } }
+function setFilter(f) { filter = f; buildDeck(); render(); }
+
+function resetAll() {
+  if (!confirm("Clear all 'I know it' and 'Need to review' tags? This cannot be undone.")) return;
+  state.ratings = {};
+  saveState();
+  buildDeck();
+  render();
+}
+
+populateStateSelect();
+
+document.querySelectorAll(".filter-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){ setFilter(btn.dataset.filter); });
+});
+$("card").addEventListener("click", flip);
+$("knowBtn").addEventListener("click", function(e){ e.stopPropagation(); rate("know"); });
+$("reviewBtn").addEventListener("click", function(e){ e.stopPropagation(); rate("review"); });
+$("nextBtn").addEventListener("click", next);
+$("prevBtn").addEventListener("click", prev);
+$("shuffleBtn").addEventListener("click", shuffle);
+$("resetBtn").addEventListener("click", resetAll);
+$("stateSelect").addEventListener("change", function(e){
+  state.stateCode = e.target.value;
+  saveState();
+  flipped = false;
+  render();
+});
+
+document.addEventListener("keydown", function(e){
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
+  if (e.code === "Space") { e.preventDefault(); flip(); }
+  else if (e.code === "ArrowRight") next();
+  else if (e.code === "ArrowLeft") prev();
+  else if (e.key === "k" || e.key === "K") rate("know");
+  else if (e.key === "r" || e.key === "R") rate("review");
+});
+
+buildDeck();
+render();
+</script>
+</body>
+</html>
